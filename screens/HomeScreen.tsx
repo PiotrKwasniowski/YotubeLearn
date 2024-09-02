@@ -35,11 +35,11 @@ const HomeScreen = ({ navigation }) => {
         By continuing, you agree with
       </Text>
       <Text style={styles.regulations}>
-        <Text style={styles.link} onPress={() => navigation.navigate('Terms')}>
+        <Text style={styles.link}>
           Terms and Conditions
         </Text>{' '}
         and{' '}
-        <Text style={styles.link} onPress={() => navigation.navigate('Privacy')}>
+        <Text style={styles.link}>
           Privacy Policy
         </Text>.
       </Text>
