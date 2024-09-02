@@ -63,7 +63,7 @@ const VideoLists = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
             <View >
-                <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe')}>
+                <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: 'React Native'})}>
                     <SvgUri
                         width="50"
                         height="50"
