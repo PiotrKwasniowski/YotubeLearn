@@ -1,13 +1,20 @@
 import React from 'react';
-import {  View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import {  View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, Button } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { useState } from 'react';
+import { Checkbox } from 'react-native-paper';
 
 const VideoGroupe = ({navigation, route}) => {
     const [results, setResults] = useState(0);
     const [sort, setSort] = useState('Most Popular');
     const [Search, setSearch] = useState(route.params.data);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedSort, setSelectedSort] = useState(sort);
 
+    const handleConfirm = () => {
+        setSort(selectedSort);
+        setModalVisible(false);
+    };
 
     return (
         <View style={styles.container}>
@@ -28,9 +35,12 @@ const VideoGroupe = ({navigation, route}) => {
 
                 <Text style={styles.dataText}>{results} results found for: </Text>
                 <Text style={styles.data}>"{Search}"</Text>
-
-                <Text style={styles.filter}>Sort by: </Text>
-                <Text style={styles.filterData}>{sort}</Text>
+            
+                <TouchableOpacity style={styles.filters} onPress={() => setModalVisible(true)}>
+                    <Text style={styles.filter}>Sort by: </Text>
+                    <Text style={styles.filterData}>{sort}</Text>
+                </TouchableOpacity>
+                
             </View>
             <View style={styles.videoContainer}>
 
@@ -57,6 +67,40 @@ const VideoGroupe = ({navigation, route}) => {
                     </TouchableOpacity>
                 </View>
             </View>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>Sort records by:</Text>
+                        <View style={styles.checkboxContainer}>
+                        {/* <Checkbox
+                            status={selectedSort === 'Upload date: latest' ? 'checked' : 'unchecked'}
+                            onPress={() => setSelectedSort('Upload date: latest')}
+                        /> */}
+                        <Text style={styles.checkboxLabel}>Upload date: latest</Text>
+                        </View>
+                        <View style={styles.checkboxContainer}>
+                        {/* <Checkbox
+                            status={selectedSort === 'Upload date: oldest' ? 'checked' : 'unchecked'}
+                            onPress={() => setSelectedSort('Upload date: oldest')}
+                        /> */}
+                        <Text style={styles.checkboxLabel}>Upload date: oldest</Text>
+                        </View>
+                        <View style={styles.checkboxContainer}>
+                        {/* <Checkbox
+                            status={selectedSort === 'Most Popular' ? 'checked' : 'unchecked'}
+                            onPress={() => setSelectedSort('Most Popular')}
+                        /> */}
+                        <Text style={styles.checkboxLabel}>Most popular</Text>
+                        </View>
+                        <Button title="Confirm" onPress={handleConfirm} />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -86,6 +130,12 @@ const styles = StyleSheet.create({
         color: '#2B2D42',
         fontFamily: 'Poppins-Regular',
         fontWeight: 'bold',
+    },
+    filters: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignSelf: 'flex-end',
+        
     },
     filter:{
         alignSelf: 'flex-end',
@@ -159,6 +209,39 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         gap: 10,
     },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+      },
+      modalView: {
+        width: 300,
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+      },
+      modalText: {
+        fontSize: 18,
+        marginBottom: 15,
+      },
+      checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+      },
+      checkboxLabel: {
+        marginLeft: 8,
+      },
 });
 
 export default VideoGroupe;
