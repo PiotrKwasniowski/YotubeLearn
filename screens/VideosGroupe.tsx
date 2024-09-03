@@ -6,53 +6,45 @@ import { API_KEY } from '@env';
 const VideoGroupe = ({ navigation, route }) => {
     const [results, setResults] = useState(0);
     const [sort, setSort] = useState('Most Popular');
-    const [search, setSearch] = useState(route.params.search);
+    const [search, setSearch] = useState('React Native');
     const [modalVisible, setModalVisible] = useState(false);
-    const [selectedSort, setSelectedSort] = useState(sort);
-    const [videos, setVideos] = useState(route.params.data.items);
+    const [selectedSort, setSelectedSort] = useState('Most Popular');
+    const [videos, setVideos] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Update results state when videos change
     useEffect(() => {
-        if (videos) {
-            setResults(route.params.data.pageInfo.resultsPerPage);
-            
+        if (route.params?.search) {
+            setSearch(route.params.search);
         }
-    }, [videos, route.params.data]);
-
-    // Update loading state based on videos
-    useEffect(() => {
-        setLoading(!videos);
-    }, [videos]);
-
-    // Fetch videos based on search input
-    const GetVideos = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${search}&key=${API_KEY}`);
-            const data = await response.json();
-            console.log(data);
-            setVideos(data.items);
-        } catch (error) {
-            console.error('Error fetching videos:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [route.params?.search]);
 
     useEffect(() => {
-        if (videos.length > 0) {
-            let sortedVideos = [...videos];
-            if (selectedSort === 'latest') {
-                sortedVideos.sort((a, b) => new Date(b.snippet.publishedAt).getTime() - new Date(a.snippet.publishedAt).getTime());
-            } else if (selectedSort === 'oldest') {
-                sortedVideos.sort((a, b) => new Date(a.snippet.publishedAt).getTime() - new Date(b.snippet.publishedAt).getTime());
-            } else if (selectedSort === 'Most Popular') {
-               sortedVideos = videos;
+        const fetchVideos = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${search}&key=${API_KEY}`);
+                const data = await response.json();
+                setVideos(data.items || []);
+                setResults(data.pageInfo?.resultsPerPage || 0);
+            } catch (error) {
+                console.error('Error fetching videos:', error);
+            } finally {
+                setLoading(false);
             }
-            setVideos(sortedVideos);
+        };
+
+        fetchVideos();
+    }, [search]);
+
+    useEffect(() => {
+        const sortedVideos = [...videos];
+        if (selectedSort === 'latest') {
+            sortedVideos.sort((a, b) => new Date(b.snippet.publishedAt).getTime() - new Date(a.snippet.publishedAt).getTime());
+        } else if (selectedSort === 'oldest') {
+            sortedVideos.sort((a, b) => new Date(a.snippet.publishedAt).getTime() - new Date(b.snippet.publishedAt).getTime());
         }
-    }, [sort]);
+        setVideos(sortedVideos);
+    }, [selectedSort]);
 
     const handleConfirm = () => {
         setSort(selectedSort);
@@ -61,12 +53,10 @@ const VideoGroupe = ({ navigation, route }) => {
 
     const renderVideoItem = ({ item }) => {
         const videoId = item.id.videoId;
-        console.log(videoId);
         const channelName = item.snippet.channelTitle;  
         const videoTitle = item.snippet.title;
         const videoThumbnail = item.snippet.thumbnails.medium.url;
         const videoPublishedAt = new Date(item.snippet.publishedAt).toLocaleDateString();
-        
 
         return (
             <TouchableOpacity key={videoId} style={styles.videoItem} onPress={() => navigation.navigate('VideoPlayer', { data: videoId })}>
@@ -82,7 +72,7 @@ const VideoGroupe = ({ navigation, route }) => {
         <View style={styles.container}>
             <View style={styles.header}>
                 <View style={styles.input}>
-                    <TouchableOpacity onPress={GetVideos}>
+                    <TouchableOpacity onPress={() => setSearch(search)}>
                         <SvgUri width="25" height="25" uri="https://svgur.com/i/19wS.svg" />
                     </TouchableOpacity>
                     <TextInput
@@ -102,28 +92,24 @@ const VideoGroupe = ({ navigation, route }) => {
                     <Text style={styles.filterData}>{sort}</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.videoContainer}>
-                {loading ? (
-                    <Text>Loading...</Text>
-                ) : (
-                    <FlatList
-                        data={videos}
-                        keyExtractor={(item) => item.id.videoId}
-                        renderItem={renderVideoItem}
-                        contentContainerStyle={styles.videoContainer}
-                    />
-                )}
-            </View>
+            <FlatList
+                data={videos}
+                keyExtractor={(item) => item.id.videoId}
+                renderItem={renderVideoItem}
+                contentContainerStyle={styles.flatListContentContainer}
+                style={styles.flatList}
+                ListEmptyComponent={loading ? <Text>Loading...</Text> : <Text>No videos found.</Text>}
+            />
             <View style={styles.footer}>
                 <View>
-                    <TouchableOpacity onPress={() => navigation.navigate('VideosLists')}>
-                        <SvgUri width="50" height="50" uri="https://svgshare.com/i/19wb.svg" />
+                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe')}>
+                        <SvgUri width="50" height="50" uri="https://svgshare.com/i/19wc.svg" />
                         <Text style={styles.home}>Home</Text>
                     </TouchableOpacity>
                 </View>
                 <View>
-                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', { data: 'React Native' })}>
-                        <SvgUri width="50" height="50" uri="https://svgshare.com/i/19v_.svg" />
+                    <TouchableOpacity onPress={() => navigation.navigate('VideosLists')}>
+                        <SvgUri width="50" height="50" uri="https://svgur.com/i/19wS.svg" />
                         <Text style={styles.search}>Search</Text>
                     </TouchableOpacity>
                 </View>
@@ -138,15 +124,15 @@ const VideoGroupe = ({ navigation, route }) => {
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Sort records by:</Text>
                         <TouchableOpacity onPress={() => setSelectedSort('latest')} style={styles.checkboxContainer}>
-                            <View style={[styles.chekcbox, { backgroundColor: sort === 'latest' ? '#2B2D42' : 'transparent' }]} />
+                            <View style={[styles.checkbox, { backgroundColor: selectedSort === 'latest' ? '#2B2D42' : 'transparent' }]} />
                             <Text style={styles.checkboxLabel}>Upload date: latest</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => setSelectedSort('oldest')} style={styles.checkboxContainer}>
-                            <View style={[styles.chekcbox, { backgroundColor: sort === 'oldest' ? '#2B2D42' : 'transparent' }]} />
+                            <View style={[styles.checkbox, { backgroundColor: selectedSort === 'oldest' ? '#2B2D42' : 'transparent' }]} />
                             <Text style={styles.checkboxLabel}>Upload date: oldest</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => setSelectedSort('Most Popular')} style={styles.checkboxContainer}>
-                            <View style={[styles.chekcbox, { backgroundColor: sort === 'Most Popular' ? '#2B2D42' : 'transparent' }]} />
+                            <View style={[styles.checkbox, { backgroundColor: selectedSort === 'Most Popular' ? '#2B2D42' : 'transparent' }]} />
                             <Text style={styles.checkboxLabel}>Most popular</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.confirmBut} onPress={handleConfirm}>
@@ -166,7 +152,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     menu: {
-        display: 'flex',
         flexDirection: 'column',
         marginTop: 55,
         width: '95%',
@@ -187,11 +172,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     filters: {
-        display: 'flex',
         flexDirection: 'row',
         alignSelf: 'flex-end',
         marginRight: 13,
-        
     },
     filter:{
         alignSelf: 'flex-end',
@@ -211,28 +194,25 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         backgroundColor: '#8D99AE',
-        display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
         gap: 80,
-        
     },
     home: {
-        textAlign: 'center',
-        color: '#2B2D42',
-        fontFamily: 'Poppins-Regular',
-        fontSize: 16,
-    },
-    search: {
         textAlign: 'center',
         color: 'white',
         fontFamily: 'Poppins-Regular',
         fontSize: 16,
     },
+    search: {
+        textAlign: 'center',
+        color: '#2B2D42',
+        fontFamily: 'Poppins-Regular',
+        fontSize: 16,
+    },
     header: {
         position: 'absolute',
-        display: 'flex',
         flexDirection: 'row',
         gap: 8,
         width: '95%',
@@ -246,7 +226,6 @@ const styles = StyleSheet.create({
         height: 40,
         borderWidth: 2,
         borderColor: '#2B2D42',
-        display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         paddingLeft: 10,
@@ -259,9 +238,8 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        textAlign: 'center',
-      },
-      modalView: {
+    },
+    modalView: {
         backgroundColor: '#8D99AE',
         width: 320,
         height: 400,
@@ -277,102 +255,86 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
         justifyContent: 'center',
-        
-      },
-      modalText: {
+    },
+    modalText: {
         fontSize: 18,
         marginBottom: 15,
         color: 'white', 
         fontFamily: 'Poppins-Regular',
         fontWeight: '600',
-      },
-      checkboxContainer: {
+    },
+    checkboxContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 10,
-      },
-      checkboxLabel: {
+    },
+    checkboxLabel: {
         marginLeft: 8,
         color: 'white',
         fontFamily: 'Poppins-Regular',
         fontSize: 14,
         alignSelf: 'center',
-      },
-      confirmBut:{
-            width: 256,
-            height: 40,
-            backgroundColor: '#2B2D42',
-            borderRadius: 10,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            color: 'white',
-            fontFamily: 'Poppins-Regular',
-            alignSelf: 'center',
-            marginTop: 160,
-            
-      },
-      chekcbox:{
-            width: 10,
-            height: 10,
-            borderRadius: 100,
-            borderColor: 'white',
-            borderWidth:  2,
-            alignSelf: 'center',
-            marginBottom: 3,
-      },
-      dataContainer:{
-        display: 'flex',
+    },
+    confirmBut:{
+        width: 256,
+        height: 40,
+        backgroundColor: '#2B2D42',
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: 'white',
+        fontFamily: 'Poppins-Regular',
+        alignSelf: 'center',
+        marginTop: 160,
+    },
+    checkbox:{
+        width: 10,
+        height: 10,
+        borderRadius: 100,
+        borderColor: 'white',
+        borderWidth:  2,
+        alignSelf: 'center',
+        marginBottom: 3,
+    },
+    dataContainer:{
         flexDirection: 'row',
         marginLeft: 1,
-      },
-      videoContainer: {
-        maxWidth: 400,
-        maxHeight: '100%',
-        overflow: 'scroll',
-        display: 'flex',
-        flexDirection: 'column',
-        marginLeft: 10,
-        position: 'static',
-        top: 80,
+    },
+    flatList: {
+        flex: 1,
+        width: '100%',
+        paddingHorizontal: 10,
+        marginTop: 150,
+    },
+    flatListContentContainer: {
+        paddingVertical: 10,
     },
     videoItem: {
-        maxHeight: 300,
-        width: 345,
+        marginBottom: 10,
         backgroundColor: '#f9f9f9',
         borderRadius: 8,
+        overflow: 'hidden',
     },
     thumbnail: {
-        width: 340,
+        width: '100%',
         height: 200,
-        borderRadius: 8,
     },
     title: {
-        width: 330,
-        height: 24,
-        lineHeight: 24,
         fontSize: 16,
         fontFamily: 'Poppins-Regular',
-        marginLeft: 5,
-        
+        margin: 5,
     },
     publishedAt: {
-        width: 80,
-        height: 24,
         fontSize: 12,
-        lineHeight: 24,
         color: '#666',
         alignSelf: 'flex-end',
-        marginRight: 10,
+        margin: 10,
     },
     channelName:{
-        width: 93,
-        height: 25,
-        lineHeight: 30,
         fontSize: 18,
         fontFamily: 'Poppins-Regular',
         fontWeight: '700',
-        marginLeft: 5,
+        margin: 5,
     }
 });
 

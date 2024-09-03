@@ -26,7 +26,7 @@ const HomeScreen = ({ navigation }) => {
       
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('VideosLists')}
+        onPress={() => navigation.navigate('VideoGroupe')}
       >
         <Text style={styles.buttonText}>Log in as guest</Text>
       </TouchableOpacity>

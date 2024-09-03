@@ -1,20 +1,40 @@
-import { useState } from 'react';
-import {  View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Svg, SvgUri } from 'react-native-svg';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { SvgUri } from 'react-native-svg';
+import { API_KEY } from '@env';
 
-const VideoPlayer = ({route}) => {
+const VideoPlayer = ({ route }) => {
     const [tab, setTab] = useState('Details');
+    const [videoData, setVideoData] = useState(null);
+    const videoId = route.params.data;
+    
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${API_KEY}&part=snippet,statistics`);
+                const data = await response.json();
+                if (data.items && data.items.length > 0) {
+                    setVideoData(data.items[0]);
+                }
+            } catch (error) {
+                console.error("Error fetching video data: ", error);
+            }
+        };
+
+        fetchData();
+    }, [videoId]);
+
     return (
         <View style={styles.videoContainer}>
             <View style={styles.player}>
-                <Text>sada{route.params.data}</Text>
+                <Text>{videoData ? videoData.snippet.title : "Loading..."}</Text>
             </View>
-            <Text style={styles.title}>dwadsadwad</Text>
+            <Text style={styles.title}>{videoData ? videoData.snippet.title : "Loading..."}</Text>
             <View style={styles.chanelContent}>
                 <View style={styles.chanelIcon}>
                     <SvgUri width="20" height="20" uri="https://svgshare.com/i/19yc.svg" />
                 </View>
-                <Text style={styles.chanelName}>Channel name</Text>
+                <Text style={styles.chanelName}>{videoData ? videoData.snippet.channelTitle : "Loading..."}</Text>
             </View>
             <View style={styles.tabs}>
                 <TouchableOpacity style={styles.details} onPress={() => setTab('Details')}>
@@ -24,7 +44,7 @@ const VideoPlayer = ({route}) => {
                             { backgroundColor: tab === 'Details' ? '#2b2d42' : '#C8C8C8' }
                     ]}/>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.notes} onPress={() =>{setTab('Notes')}}>
+                <TouchableOpacity style={styles.notes} onPress={() => setTab('Notes')}>
                     <Text style={styles.tabText}>Notes</Text>
                     <View style={[
                             styles.bar,
@@ -32,22 +52,24 @@ const VideoPlayer = ({route}) => {
                     ]}/>
                 </TouchableOpacity>
             </View>
-            <View style = {[styles.detailsData, {display: tab === "Details" ? 'flex' : 'none'}]}>
+            <View style={[styles.detailsData, { display: tab === "Details" ? 'flex' : 'none' }]}>
                 <Text style={styles.detailsText}>Details</Text>
-                <Text style={styles.descText}>Details</Text>
-                <Text style={styles.detailsText}>Statistics</Text>
-                <View style={styles.statsContainer}>
-                    <View style={styles.stats}>
-                        <SvgUri width="20" height="20" uri="https://svgshare.com/i/19yh.svg" />
-                        <Text style={styles.statsText}>100 views</Text>
+                <ScrollView contentContainerStyle={styles.scrollContent}>
+                    <Text style={styles.descText}>{videoData ? videoData.snippet.description : "Loading..."}</Text>
+                    <Text style={styles.detailsText}>Statistics</Text>
+                    <View style={styles.statsContainer}>
+                        <View style={styles.stats}>
+                            <SvgUri width="20" height="20" uri="https://svgshare.com/i/19yh.svg" />
+                            <Text style={styles.statsText}>{videoData ? `${videoData.statistics.viewCount} views` : "Loading..."}</Text>
+                        </View>
+                        <View style={styles.stats}>
+                            <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A04.svg" />
+                            <Text style={styles.statsText}>{videoData ? `${videoData.statistics.likeCount} likes` : "Loading..."}</Text>
+                        </View>
                     </View>
-                    <View style={styles.stats}>
-                        <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A04.svg" />
-                        <Text style={styles.statsText}>100 likes</Text>
-                    </View>
-                </View>
-            </View> 
-            <View style = {[styles.notesData, {display: tab === "Notes" ? 'flex' : 'none'}]}>
+                </ScrollView>
+            </View>
+            <View style={[styles.notesData, { display: tab === "Notes" ? 'flex' : 'none' }]}>
                 <Text>Notes</Text>
             </View>
         </View>
@@ -57,7 +79,6 @@ const VideoPlayer = ({route}) => {
 const styles = StyleSheet.create({
     videoContainer: {
         flex: 1,
-        
         alignItems: 'center',
         height: '100%',
     },
@@ -65,122 +86,113 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 280,
         backgroundColor: 'black',
-        alignSelf: 'flex-start',
     },
-    title:{
-        width: 361,
+    title: {
+        width: '90%',
         height: 25,
         fontFamily: 'Poppins-Regular',
         fontWeight: '600',
         fontSize: 20,
         color: '#2b2d42',
+        marginVertical: 10,
     },
-    chanelContent:{
-        width: 361,
+    chanelContent: {
+        width: '90%',
         height: 100,
         marginTop: 10,
-        display: 'flex',
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        gap: 10,
     },
-    chanelIcon:{
+    chanelIcon: {
         width: 48,
         height: 48,
         backgroundColor: '#2b2d42',
-        borderRadius: 50,
-        display: 'flex',
+        borderRadius: 24,
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: 10,
     },
-    chanelName:{
+    chanelName: {
         fontFamily: 'Poppins-Regular',
         fontWeight: '700',
         fontSize: 14,
         lineHeight: 15,
         color: '#2b2d42',
     },
-    tabs:{
+    tabs: {
         width: '100%',
-        display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
-        alignContent: 'center',
-    },
-    details:{
-        width: "40%",
-        display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
     },
-    notes:{
-        width: "40%",
-        display: 'flex',
-        flexDirection: 'column',
+    details: {
+        width: '40%',
         alignItems: 'center',
-        textAlign: 'center',
     },
-    bar:{
-        width: 181,
+    notes: {
+        width: '40%',
+        alignItems: 'center',
+    },
+    bar: {
+        width: '100%',
         height: 2,
         backgroundColor: '#C8C8C8',
+        marginTop: 4,
     },
-    tabText:{
+    tabText: {
         fontFamily: 'Poppins-Regular',
         fontWeight: '600',
         fontSize: 14,
-        lineHeight: 15,
         color: '#2b2d42',
-        alignSelf: 'center',
     },
-    detailsData:{
+    detailsData: {
+        flex: 1,  // Important for scrollable area
+        width: '85%',
+    },
+    notesData: {
         marginTop: 20,
         width: '85%',
     },
-    notesData:{
-        marginTop: 20,
-        width: '85%',
-    },
-    detailsText:{
+    detailsText: {
         fontFamily: 'Poppins-Regular',
         fontWeight: '800',
         fontSize: 16,
         color: '#2b2d42',
         marginTop: 10,
     },
-    descText:{
+    descText: {
         fontFamily: 'Poppins-Regular',
         fontWeight: '600',
         fontSize: 12,
         color: '#2b2d42',
+        marginVertical: 8,
     },
-    statsContainer:{
-        display: 'flex',
+    scrollContent: {
+        paddingBottom: 20, // Ensure scrolling doesn't cut off content
+    },
+    statsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '100%',
     },
-    stats:{
+    stats: {
         width: 136,
-        height: 32,  
-        display: 'flex',
+        height: 32,
         flexDirection: 'row',
-        textAlign: 'center',
         alignItems: 'center',
         justifyContent: 'flex-start',
         backgroundColor: '#2b2d42',
         borderRadius: 10,
         paddingLeft: 10,
-        gap: 10,
+        marginRight: 10,
     },
-    statsText:{
+    statsText: {
         fontFamily: 'Poppins-Regular',
         fontWeight: '600',
         fontSize: 12,
         color: '#ffffff',
-        alignSelf: 'center',
         marginTop: 5,
     },
 });
+
 export default VideoPlayer;
