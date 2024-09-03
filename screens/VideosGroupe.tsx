@@ -2,7 +2,8 @@ import React from 'react';
 import {  View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, Button } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { useState } from 'react';
-import { Checkbox } from 'react-native-paper';
+import CheckBox from '@react-native-community/checkbox';
+
 
 const VideoGroupe = ({navigation, route}) => {
     const [results, setResults] = useState(0);
@@ -76,28 +77,36 @@ const VideoGroupe = ({navigation, route}) => {
                 <View style={styles.modalContainer}>
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Sort records by:</Text>
-                        <View style={styles.checkboxContainer}>
-                        {/* <Checkbox
-                            status={selectedSort === 'Upload date: latest' ? 'checked' : 'unchecked'}
-                            onPress={() => setSelectedSort('Upload date: latest')}
-                        /> */}
-                        <Text style={styles.checkboxLabel}>Upload date: latest</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                        {/* <Checkbox
-                            status={selectedSort === 'Upload date: oldest' ? 'checked' : 'unchecked'}
-                            onPress={() => setSelectedSort('Upload date: oldest')}
-                        /> */}
-                        <Text style={styles.checkboxLabel}>Upload date: oldest</Text>
-                        </View>
-                        <View style={styles.checkboxContainer}>
-                        {/* <Checkbox
-                            status={selectedSort === 'Most Popular' ? 'checked' : 'unchecked'}
-                            onPress={() => setSelectedSort('Most Popular')}
-                        /> */}
-                        <Text style={styles.checkboxLabel}>Most popular</Text>
-                        </View>
-                        <Button title="Confirm" onPress={handleConfirm} />
+                        <TouchableOpacity onPress={() => {setSelectedSort('latest')}} style={styles.checkboxContainer}>
+                            <View 
+                                style={[
+                                    styles.chekcbox, 
+                                    { backgroundColor: sort === 'latest' ? '#2B2D42' : 'transparent' }
+                                ]}
+                            />
+                            <Text style={styles.checkboxLabel}>Upload date: latest</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => {setSelectedSort('oldest')}} style={styles.checkboxContainer}>
+                            <View 
+                                style={[
+                                    styles.chekcbox, 
+                                    { backgroundColor: sort === 'oldest' ? '#2B2D42' : 'transparent' }
+                                ]}
+                            />
+                            <Text style={styles.checkboxLabel}>Upload date: oldest</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => {setSelectedSort('Most Popular')}} style={styles.checkboxContainer}>
+                            <View 
+                                style={[
+                                    styles.chekcbox, 
+                                    { backgroundColor: sort === 'Most Popular' ? '#2B2D42' : 'transparent' }
+                                ]}
+                            />
+                            <Text style={styles.checkboxLabel}>Most popular</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.confirmBut}  onPress={handleConfirm}>
+                            <Text style={{color: 'white'}}>Confirm</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
@@ -213,14 +222,14 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
       },
       modalView: {
-        width: 300,
-        backgroundColor: 'white',
+        backgroundColor: '#8D99AE',
+        width: 320,
+        height: 400,
         borderRadius: 10,
         padding: 20,
-        alignItems: 'center',
+        alignItems: 'flex-start',
         shadowColor: '#000',
         shadowOffset: {
           width: 0,
@@ -229,10 +238,14 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
+        
       },
       modalText: {
         fontSize: 18,
         marginBottom: 15,
+        color: 'white', 
+        fontFamily: 'Poppins-Regular',
+        fontWeight: '600',
       },
       checkboxContainer: {
         flexDirection: 'row',
@@ -241,7 +254,33 @@ const styles = StyleSheet.create({
       },
       checkboxLabel: {
         marginLeft: 8,
+        color: 'white',
+        fontFamily: 'Poppins-Regular',
+        fontSize: 14,
+        alignSelf: 'center',
       },
+      confirmBut:{
+            width: 256,
+            height: 40,
+            backgroundColor: '#2B2D42',
+            borderRadius: 10,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: 'white',
+            fontFamily: 'Poppins-Regular',
+            alignSelf: 'flex-end',
+            marginTop: 160,
+      },
+      chekcbox:{
+            width: 10,
+            height: 10,
+            borderRadius: 100,
+            borderColor: 'white',
+            borderWidth:  2,
+            alignSelf: 'center',
+            marginBottom: 3,
+      }
 });
 
 export default VideoGroupe;
