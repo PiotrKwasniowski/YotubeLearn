@@ -57,7 +57,6 @@ const VideoGroupe = ({ navigation, route }) => {
     const handleConfirm = () => {
         setSort(selectedSort);
         setModalVisible(false);
-        console.log(sort)
     };
 
     const renderVideoItem = ({ item }) => {

@@ -4,6 +4,7 @@ import { SvgUri } from 'react-native-svg';
 import {API_KEY} from '@env';
 
 const VideoLists = ({ navigation }) => {
+    console.log(API_KEY)
     const [reactVideos, setReactVideos] = useState([]);
     const [reactData, setReactData] = useState([]);
     const [reactNativeVideos, setReactNativeVideos] = useState([]);
@@ -11,6 +12,7 @@ const VideoLists = ({ navigation }) => {
     const [typescriptVideos, setTypescriptVideos] = useState([]);
     const [typescriptData, setTypescriptData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
 
     const GetVideos =  async (topic) =>{
         try{
@@ -27,13 +29,21 @@ const VideoLists = ({ navigation }) => {
     }
 
     useEffect(() => {
-        // GetVideos('React Native tutorial programing').then(data => setReactNativeVideos(data.items));
-        GetVideos('React tutorial programming')
-        .then(data => {
-            setReactVideos(data.items);
-            setReactData(data);
-        })
-        // GetVideos('Typescript tutorial programing').then(data => setTypescriptVideos(data));
+        // GetVideos('React Native tutorial programing')
+        // .then(data => {
+        //     setReactNativeVideos(data.items); 
+        //     setReactNativeData(data)
+        // });
+        // GetVideos('React tutorial programming')
+        // .then(data => {
+        //     setReactVideos(data.items);
+        //     setReactData(data);
+        // })
+        // GetVideos('Typescript tutorial programing')
+        // .then(data => {
+        //     setTypescriptVideos(data.items)
+        //     setTypescriptData(data);
+        // });
     
     
     }, []);
@@ -52,20 +62,36 @@ const VideoLists = ({ navigation }) => {
         );
     };
 
+    const searching = async() => {
+        try{
+            const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${search}&key=${API_KEY}`);
+            const data = await response.json();
+            console.log(data)
+            navigation.navigate('VideoGroupe', {data: data , search: search});
+            setSearch('');
+        }catch(error){
+            console.log(error);
+        }
+        
+    }
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <View style={styles.input}>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={searching}>
                         <SvgUri
                             width="25"
                             height="25"
                             uri="https://svgur.com/i/19wS.svg"
                         />
                     </TouchableOpacity>
-                    <TextInput placeholder="Search videos" />
+                    <TextInput
+                        onChangeText={text => setSearch(text)}
+                        placeholder="Search videos"
+                        value={search}
+                    />
                 </View>
-                <TouchableOpacity>
+                <TouchableOpacity style={styles.settings} onPress={() => navigation.navigate('Settings')}>
                         <SvgUri
                             width="36"
                             height="36"
@@ -80,8 +106,20 @@ const VideoLists = ({ navigation }) => {
                     <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: reactNativeData, search: 'React Native'})}>
                         <Text style={styles.link}>Show more</Text>
                     </TouchableOpacity>
+                </View > 
+                <View style={styles.videosContainer}>
+                    {loading ? (
+                            <Text>Loading...</Text>
+                        ) : (
+                            <FlatList
+                            data={reactNativeVideos}
+                            keyExtractor={(item) => item.id.videoId}
+                            renderItem={renderVideoItem}
+                            contentContainerStyle={styles.videosContainer}
+                            />
+                       )}
                 </View>
-
+                
             </View>
             <View style={styles.React}>
                 <View style={styles.reactHeader}>
@@ -110,6 +148,18 @@ const VideoLists = ({ navigation }) => {
                         <Text style={styles.link}>Show more</Text>
                     </TouchableOpacity>
                 </View>
+                <View style={styles.videosContainer}>
+                    {loading ? (
+                        <Text>Loading...</Text>
+                    ) : (
+                        <FlatList
+                        data={typescriptVideos}
+                        keyExtractor={(item) => item.id.videoId}
+                        renderItem={renderVideoItem}
+                        contentContainerStyle={styles.videosContainer}
+                        />
+                    )}
+                </View>
             </View>
 
             <View style={styles.footer}>
@@ -124,7 +174,7 @@ const VideoLists = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
                 <View >
-                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: reactNativeVideos, search: 'React Native'})}>
+                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: reactNativeData, search: 'React Native'})}>
                         <SvgUri
                             width="50"
                             height="50"
@@ -155,20 +205,21 @@ const styles = StyleSheet.create({
     },
     reactNativeHeader: {
         width: '90%',
-        height: 40,
+        height: 30,
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
     reactNative:{
-        width: '95%',
+        width: '100%',
         height: 218,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         position: 'absolute',
-        top: 120,
+        top: 100,
+        marginBottom: 25,
     },
     searchIcon: {
         width: 25,
@@ -291,6 +342,9 @@ const styles = StyleSheet.create({
         color: '#666',
         alignSelf: 'flex-end',
     },
+    settings:{
+        marginRight: 10,
+    }
 });
 export default VideoLists;
 

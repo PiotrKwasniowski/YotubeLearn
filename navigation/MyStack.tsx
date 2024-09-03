@@ -16,7 +16,7 @@ const MyStack = () => {
       <Stack.Screen name="VideosLists" component={VideosLists} options={{ headerShown: false }} />
       <Stack.Screen name="VideoPlayer" component={VideoPlayer} options={{ headerShown: false }} />
       <Stack.Screen name="VideoGroupe" component={VideosGroupe} options={{ headerShown: false }} />
-      <Stack.Screen name="Settings" component={Settings}  />
+      <Stack.Screen name="Settings" component={Settings} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 };
