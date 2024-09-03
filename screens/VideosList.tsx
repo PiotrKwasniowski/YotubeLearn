@@ -1,80 +1,141 @@
-import * as React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { useEffect, useState } from 'react'; 
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, FlatList } from 'react-native';
 import { SvgUri } from 'react-native-svg';
+import {API_KEY} from '@env';
 
 const VideoLists = ({ navigation }) => {
-  return (
-    <View style={styles.container}>
-        <View style={styles.header}>
-            <View style={styles.input}>
-                <TouchableOpacity>
-                    <SvgUri
-                        width="25"
-                        height="25"
-                        uri="https://svgur.com/i/19wS.svg"
-                    />
-                </TouchableOpacity>
-                <TextInput placeholder="Search videos" />
-            </View>
-            <TouchableOpacity>
-                    <SvgUri
-                        width="36"
-                        height="36"
-                        uri="https://svgur.com/i/19wn.svg"
-                    />
-            </TouchableOpacity>
-            
-        </View>
-        <View style={styles.reactNative}>
-            <View style={styles.reactNativeHeader}>
-                <Text style={styles.reactNativeTitle}>React Native</Text>
-                <TouchableOpacity>
-                    <Text style={styles.link}>Show more</Text>
-                </TouchableOpacity>
-            </View>
+    const [reactVideos, setReactVideos] = useState([]);
+    const [reactData, setReactData] = useState([]);
+    const [reactNativeVideos, setReactNativeVideos] = useState([]);
+    const [reactNativeData, setReactNativeData] = useState([]);
+    const [typescriptVideos, setTypescriptVideos] = useState([]);
+    const [typescriptData, setTypescriptData] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-        </View>
-        <View style={styles.React}>
-            <View style={styles.reactHeader}>
-                    <Text style={styles.reactNativeTitle}>React</Text>
+    const GetVideos =  async (topic) =>{
+        try{
+            const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${topic}&key=${API_KEY}`);
+            const data = await response.json();
+            return data;
+            
+
+        }catch(error){
+            console.log(error);
+        }finally{
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        // GetVideos('React Native tutorial programing').then(data => setReactNativeVideos(data.items));
+        GetVideos('React tutorial programming')
+        .then(data => {
+            setReactVideos(data.items);
+            setReactData(data);
+        })
+        // GetVideos('Typescript tutorial programing').then(data => setTypescriptVideos(data));
+    
+    
+    }, []);
+    const renderVideoItem = ({ item }) => {
+        const videoId = item.id.videoId;
+        const videoTitle = item.snippet.title;
+        const videoThumbnail = item.snippet.thumbnails.medium.url;
+        const videoPublishedAt = new Date(item.snippet.publishedAt).toLocaleDateString();
+    
+        return (
+          <TouchableOpacity key={videoId} style={styles.videoItem} onPress={() => navigation.navigate('VideoPlayer', {data: videoId})}>
+            <Image source={{ uri: videoThumbnail }} style={styles.thumbnail} />
+            <Text style={styles.title}>{videoTitle}</Text>
+            <Text style={styles.publishedAt}>{videoPublishedAt}</Text>
+          </TouchableOpacity>
+        );
+    };
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <View style={styles.input}>
                     <TouchableOpacity>
+                        <SvgUri
+                            width="25"
+                            height="25"
+                            uri="https://svgur.com/i/19wS.svg"
+                        />
+                    </TouchableOpacity>
+                    <TextInput placeholder="Search videos" />
+                </View>
+                <TouchableOpacity>
+                        <SvgUri
+                            width="36"
+                            height="36"
+                            uri="https://svgur.com/i/19wn.svg"
+                        />
+                </TouchableOpacity>
+                
+            </View>
+            <View style={styles.reactNative}>
+                <View style={styles.reactNativeHeader}>
+                    <Text style={styles.reactNativeTitle}>React Native</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: reactNativeData, search: 'React Native'})}>
+                        <Text style={styles.link}>Show more</Text>
+                    </TouchableOpacity>
+                </View>
+
+            </View>
+            <View style={styles.React}>
+                <View style={styles.reactHeader}>
+                    <Text style={styles.reactNativeTitle}>React</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: reactData, search: 'React'})}>
+                        <Text style={styles.link}>Show more</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.videosContainer}>
+                    {loading ? (
+                        <Text>Loading...</Text>
+                    ) : (
+                        <FlatList
+                        data={reactVideos}
+                        keyExtractor={(item) => item.id.videoId}
+                        renderItem={renderVideoItem}
+                        contentContainerStyle={styles.videosContainer}
+                        />
+                    )}
+                </View>
+            </View>
+            <View style={styles.Typescript}>
+                <View style={styles.reactNativeHeader}>
+                    <Text style={styles.reactNativeTitle}>Typescript</Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: typescriptData, search: 'Typescript'})}>
                         <Text style={styles.link}>Show more</Text>
                     </TouchableOpacity>
                 </View>
             </View>
-        <View style={styles.Typescript}>
-            <View style={styles.reactNativeHeader}>
-                <Text style={styles.reactNativeTitle}>Typescript</Text>
-                <TouchableOpacity>
-                    <Text style={styles.link}>Show more</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
 
-        <View style={styles.footer}>
-            <View >
-                <TouchableOpacity onPress={() => navigation.navigate('VideosLists')}>
-                    <SvgUri
-                        width="50"
-                        height="50"
-                        uri="https://svgshare.com/i/19wc.svg"
-                    />
-                    <Text style={styles.home}>Home</Text>
-                </TouchableOpacity>
-            </View>
-            <View >
-                <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: 'React Native'})}>
-                    <SvgUri
-                        width="50"
-                        height="50"
-                        uri="https://svgur.com/i/19wS.svg"
-                    />
-                    <Text style={styles.search} >Search</Text>
-                </TouchableOpacity>
+            <View style={styles.footer}>
+                <View >
+                    <TouchableOpacity onPress={() => navigation.navigate('VideosLists')}>
+                        <SvgUri
+                            width="50"
+                            height="50"
+                            uri="https://svgshare.com/i/19wc.svg"
+                        />
+                        <Text style={styles.home}>Home</Text>
+                    </TouchableOpacity>
+                </View>
+                <View >
+                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: reactNativeVideos, search: 'React Native'})}>
+                        <SvgUri
+                            width="50"
+                            height="50"
+                            uri="https://svgur.com/i/19wS.svg"
+                        />
+                        <Text style={styles.search} >Search</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
-    </View>
-  );
+    );
 };
 const styles = StyleSheet.create({
     container: {
@@ -198,7 +259,38 @@ const styles = StyleSheet.create({
         color: '#2B2D42',
         fontFamily: 'Poppins-Regular',
         fontSize: 16,
-    }
+    },
+    videosContainer: {
+        maxWidth: '100%',
+        height: 200,
+        marginLeft: 10,
+        overflow: 'scroll',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 4,
+    },
+    videoItem: {
+        marginBottom: 20,
+        backgroundColor: '#f9f9f9',
+        padding: 10,
+        borderRadius: 8,
+    },
+    thumbnail: {
+        width: 150,
+        height: 100,
+        borderRadius: 8,
+    },
+    title: {
+        width: 150,
+        fontSize: 12,
+        fontWeight: 'bold',
+        
+    },
+    publishedAt: {
+        fontSize: 14,
+        color: '#666',
+        alignSelf: 'flex-end',
+    },
 });
 export default VideoLists;
 

@@ -1,70 +1,130 @@
-import React from 'react';
-import {  View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, Button } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Modal, FlatList, Image } from 'react-native';
 import { SvgUri } from 'react-native-svg';
-import { useState } from 'react';
-import CheckBox from '@react-native-community/checkbox';
+import { API_KEY } from '@env';
 
-
-const VideoGroupe = ({navigation, route}) => {
+const VideoGroupe = ({ navigation, route }) => {
     const [results, setResults] = useState(0);
     const [sort, setSort] = useState('Most Popular');
-    const [Search, setSearch] = useState(route.params.data);
+    const [search, setSearch] = useState(route.params.search);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedSort, setSelectedSort] = useState(sort);
+    const [videos, setVideos] = useState(route.params.data.items);
+    const [loading, setLoading] = useState(true);
+
+    // Update results state when videos change
+    useEffect(() => {
+        if (videos) {
+            setResults(route.params.data.pageInfo.resultsPerPage);
+            
+        }
+    }, [videos, route.params.data]);
+
+    // Update loading state based on videos
+    useEffect(() => {
+        setLoading(!videos);
+    }, [videos]);
+
+    // Fetch videos based on search input
+    const GetVideos = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${search}&key=${API_KEY}`);
+            const data = await response.json();
+            console.log(data);
+            setVideos(data.items);
+        } catch (error) {
+            console.error('Error fetching videos:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (videos.length > 0) {
+            let sortedVideos = [...videos];
+            if (selectedSort === 'latest') {
+                sortedVideos.sort((a, b) => new Date(b.snippet.publishedAt).getTime() - new Date(a.snippet.publishedAt).getTime());
+            } else if (selectedSort === 'oldest') {
+                sortedVideos.sort((a, b) => new Date(a.snippet.publishedAt).getTime() - new Date(b.snippet.publishedAt).getTime());
+            } else if (selectedSort === 'Most Popular') {
+               sortedVideos = videos;
+            }
+            setVideos(sortedVideos);
+        }
+    }, [sort]);
 
     const handleConfirm = () => {
         setSort(selectedSort);
         setModalVisible(false);
+        console.log(sort)
+    };
+
+    const renderVideoItem = ({ item }) => {
+        const videoId = item.id.videoId;
+        const channelName = item.snippet.channelTitle;  
+        const videoTitle = item.snippet.title;
+        const videoThumbnail = item.snippet.thumbnails.medium.url;
+        const videoPublishedAt = new Date(item.snippet.publishedAt).toLocaleDateString();
+        
+
+        return (
+            <TouchableOpacity key={videoId} style={styles.videoItem} onPress={() => navigation.navigate('VideoPlayer', { data: videoId })}>
+                <Image source={{ uri: videoThumbnail }} style={styles.thumbnail} />
+                <Text style={styles.channelName}>{channelName}</Text>
+                <Text style={styles.title}>{videoTitle}</Text>
+                <Text style={styles.publishedAt}>{videoPublishedAt}</Text>
+            </TouchableOpacity>
+        );
     };
 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <View style={styles.input}>
-                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: Search})}>
-                        <SvgUri
-                            width="25"
-                            height="25"
-                            uri="https://svgur.com/i/19wS.svg"
-                        />
+                    <TouchableOpacity onPress={GetVideos}>
+                        <SvgUri width="25" height="25" uri="https://svgur.com/i/19wS.svg" />
                     </TouchableOpacity>
-                    <TextInput onChangeText={text => setSearch(text)} onBlur={() => navigation.navigate('VideoGroupe', {data: Search})} placeholder="Search videos" value={Search} />
+                    <TextInput
+                        onChangeText={text => setSearch(text)}
+                        placeholder="Search videos"
+                        value={search}
+                    />
                 </View>
-   
             </View>
             <View style={styles.menu}>
-
-                <Text style={styles.dataText}>{results} results found for: </Text>
-                <Text style={styles.data}>"{Search}"</Text>
-            
+                <View style={styles.dataContainer}>
+                    <Text style={styles.dataText}>{results} results found for: </Text>
+                    <Text style={styles.data}>"{search}"</Text>
+                </View>
                 <TouchableOpacity style={styles.filters} onPress={() => setModalVisible(true)}>
                     <Text style={styles.filter}>Sort by: </Text>
                     <Text style={styles.filterData}>{sort}</Text>
                 </TouchableOpacity>
-                
             </View>
             <View style={styles.videoContainer}>
-
+                {loading ? (
+                    <Text>Loading...</Text>
+                ) : (
+                    <FlatList
+                        data={videos}
+                        keyExtractor={(item) => item.id.videoId}
+                        renderItem={renderVideoItem}
+                        contentContainerStyle={styles.videoContainer}
+                    />
+                )}
             </View>
             <View style={styles.footer}>
-                <View >
+                <View>
                     <TouchableOpacity onPress={() => navigation.navigate('VideosLists')}>
-                        <SvgUri
-                            width="50"
-                            height="50"
-                            uri="https://svgshare.com/i/19wb.svg"
-                        />
+                        <SvgUri width="50" height="50" uri="https://svgshare.com/i/19wb.svg" />
                         <Text style={styles.home}>Home</Text>
                     </TouchableOpacity>
                 </View>
-                <View >
-                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', {data: 'React Native'})}>
-                        <SvgUri
-                            width="50"
-                            height="50"
-                            uri="https://svgshare.com/i/19v_.svg"
-                        />
-                        <Text style={styles.search} >Search</Text>
+                <View>
+                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', { data: 'React Native' })}>
+                        <SvgUri width="50" height="50" uri="https://svgshare.com/i/19v_.svg" />
+                        <Text style={styles.search}>Search</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -77,35 +137,20 @@ const VideoGroupe = ({navigation, route}) => {
                 <View style={styles.modalContainer}>
                     <View style={styles.modalView}>
                         <Text style={styles.modalText}>Sort records by:</Text>
-                        <TouchableOpacity onPress={() => {setSelectedSort('latest')}} style={styles.checkboxContainer}>
-                            <View 
-                                style={[
-                                    styles.chekcbox, 
-                                    { backgroundColor: sort === 'latest' ? '#2B2D42' : 'transparent' }
-                                ]}
-                            />
+                        <TouchableOpacity onPress={() => setSelectedSort('latest')} style={styles.checkboxContainer}>
+                            <View style={[styles.chekcbox, { backgroundColor: sort === 'latest' ? '#2B2D42' : 'transparent' }]} />
                             <Text style={styles.checkboxLabel}>Upload date: latest</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => {setSelectedSort('oldest')}} style={styles.checkboxContainer}>
-                            <View 
-                                style={[
-                                    styles.chekcbox, 
-                                    { backgroundColor: sort === 'oldest' ? '#2B2D42' : 'transparent' }
-                                ]}
-                            />
+                        <TouchableOpacity onPress={() => setSelectedSort('oldest')} style={styles.checkboxContainer}>
+                            <View style={[styles.chekcbox, { backgroundColor: sort === 'oldest' ? '#2B2D42' : 'transparent' }]} />
                             <Text style={styles.checkboxLabel}>Upload date: oldest</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => {setSelectedSort('Most Popular')}} style={styles.checkboxContainer}>
-                            <View 
-                                style={[
-                                    styles.chekcbox, 
-                                    { backgroundColor: sort === 'Most Popular' ? '#2B2D42' : 'transparent' }
-                                ]}
-                            />
+                        <TouchableOpacity onPress={() => setSelectedSort('Most Popular')} style={styles.checkboxContainer}>
+                            <View style={[styles.chekcbox, { backgroundColor: sort === 'Most Popular' ? '#2B2D42' : 'transparent' }]} />
                             <Text style={styles.checkboxLabel}>Most popular</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.confirmBut}  onPress={handleConfirm}>
-                            <Text style={{color: 'white'}}>Confirm</Text>
+                        <TouchableOpacity style={styles.confirmBut} onPress={handleConfirm}>
+                            <Text style={{ color: 'white' }}>Confirm</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -122,12 +167,13 @@ const styles = StyleSheet.create({
     },
     menu: {
         display: 'flex',
-        flexDirection: 'row',
-        marginTop: 10,
-        justifyContent: 'space-between',
+        flexDirection: 'column',
+        marginTop: 55,
+        width: '95%',
         height: 60,
         position: 'absolute',
-        top: 100,
+        top: 50,
+        zIndex: 1,
     },
     dataText:{
         alignSelf: 'flex-start',
@@ -144,6 +190,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         alignSelf: 'flex-end',
+        marginRight: 13,
         
     },
     filter:{
@@ -156,7 +203,7 @@ const styles = StyleSheet.create({
         color: '#2B2D42',
         fontFamily: 'Poppins-Regular',
         fontWeight: 'bold',
-        marginBottom: 4,
+        paddingBottom: 4,
     },
     footer: {
         width: '100%',
@@ -192,6 +239,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         top: 50,
+        height: 40,
     },
     input: {
         minWidth: '90%',
@@ -205,17 +253,6 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         borderRadius: 16,
         marginLeft: 10,
-        gap: 10,
-    },
-
-    videoContainer: {
-        width: '100%',
-        height: '100%',
-        position: 'absolute',
-        top: 200,
-        overflow: 'scroll',
-        display: 'flex',
-        flexDirection: 'column',
         gap: 10,
     },
     modalContainer: {
@@ -280,7 +317,60 @@ const styles = StyleSheet.create({
             borderWidth:  2,
             alignSelf: 'center',
             marginBottom: 3,
-      }
+      },
+      dataContainer:{
+        display: 'flex',
+        flexDirection: 'row',
+        marginLeft: 1,
+      },
+      videoContainer: {
+        maxWidth: 400,
+        maxHeight: '100%',
+        overflow: 'scroll',
+        display: 'flex',
+        flexDirection: 'column',
+        marginLeft: 10,
+        position: 'static',
+        top: 80,
+    },
+    videoItem: {
+        maxHeight: 300,
+        width: 345,
+        backgroundColor: '#f9f9f9',
+        borderRadius: 8,
+    },
+    thumbnail: {
+        width: 340,
+        height: 200,
+        borderRadius: 8,
+    },
+    title: {
+        width: 330,
+        height: 24,
+        lineHeight: 24,
+        fontSize: 16,
+        fontFamily: 'Poppins-Regular',
+        marginLeft: 5,
+        
+    },
+    publishedAt: {
+        width: 80,
+        height: 24,
+        fontSize: 12,
+        lineHeight: 24,
+        color: '#666',
+        alignSelf: 'flex-end',
+        marginRight: 10,
+    },
+    channelName:{
+        width: 93,
+        height: 25,
+        lineHeight: 30,
+        fontSize: 18,
+        fontFamily: 'Poppins-Regular',
+        fontWeight: '700',
+        marginLeft: 5,
+    }
 });
 
 export default VideoGroupe;
