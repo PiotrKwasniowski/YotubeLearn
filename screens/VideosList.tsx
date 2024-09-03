@@ -4,7 +4,6 @@ import { SvgUri } from 'react-native-svg';
 import {API_KEY} from '@env';
 
 const VideoLists = ({ navigation }) => {
-    console.log(API_KEY)
     const [reactVideos, setReactVideos] = useState([]);
     const [reactData, setReactData] = useState([]);
     const [reactNativeVideos, setReactNativeVideos] = useState([]);
@@ -52,7 +51,7 @@ const VideoLists = ({ navigation }) => {
         const videoTitle = item.snippet.title;
         const videoThumbnail = item.snippet.thumbnails.medium.url;
         const videoPublishedAt = new Date(item.snippet.publishedAt).toLocaleDateString();
-    
+
         return (
           <TouchableOpacity key={videoId} style={styles.videoItem} onPress={() => navigation.navigate('VideoPlayer', {data: videoId})}>
             <Image source={{ uri: videoThumbnail }} style={styles.thumbnail} />

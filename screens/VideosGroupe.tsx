@@ -61,6 +61,7 @@ const VideoGroupe = ({ navigation, route }) => {
 
     const renderVideoItem = ({ item }) => {
         const videoId = item.id.videoId;
+        console.log(videoId);
         const channelName = item.snippet.channelTitle;  
         const videoTitle = item.snippet.title;
         const videoThumbnail = item.snippet.thumbnails.medium.url;
