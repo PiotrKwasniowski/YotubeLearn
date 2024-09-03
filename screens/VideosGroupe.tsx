@@ -258,6 +258,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        textAlign: 'center',
       },
       modalView: {
         backgroundColor: '#8D99AE',
@@ -274,6 +275,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
+        justifyContent: 'center',
         
       },
       modalText: {
@@ -305,8 +307,9 @@ const styles = StyleSheet.create({
             alignItems: 'center',
             color: 'white',
             fontFamily: 'Poppins-Regular',
-            alignSelf: 'flex-end',
+            alignSelf: 'center',
             marginTop: 160,
+            
       },
       chekcbox:{
             width: 10,
