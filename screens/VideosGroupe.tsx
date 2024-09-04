@@ -22,7 +22,7 @@ const VideoGroupe = ({ navigation, route }) => {
         const fetchVideos = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${search}&key=${API_KEY}`);
+                const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${search}&key=${API_KEY}`); //only 3 videos for save api calls
                 const data = await response.json();
                 setVideos(data.items || []);
                 setResults(data.pageInfo?.resultsPerPage || 0);
