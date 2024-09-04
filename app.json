@@ -1,6 +1,5 @@
 {
   "expo": {
-
     "name": "YoutubeLearn",
     "slug": "YoutubeLearn",
     "version": "1.0.0",
@@ -11,7 +10,6 @@
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
-      
     },
     "ios": {
       "supportsTablet": true
@@ -20,16 +18,20 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.piotrkwasniowski.YoutubeLearn"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-   "plugins": [
+    "plugins": [
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/Poppins-Regular.ttf", "./assets/fonts/Poppins-SemiBold.ttf"]
+          "fonts": [
+            "./assets/fonts/Poppins-Regular.ttf",
+            "./assets/fonts/Poppins-SemiBold.ttf"
+          ]
         }
       ]
     ],

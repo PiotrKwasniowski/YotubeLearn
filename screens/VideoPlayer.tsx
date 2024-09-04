@@ -12,8 +12,8 @@ const VideoPlayer = ({ route }) => {
     const [notes, setNotes] = useState([]);
     const [note, setNote] = useState('');
 
-    // const videoRef = React.useRef<VideoRef>(null);
-    // const background = require('../assets/video/broadchurch.mp4');
+    const videoRef = React.useRef<VideoRef>(null);
+    const background = require('../assets/video/broadchurch.mp4');
 
     const onChangeTextInput = (text) => {
         setNote(text);
@@ -32,24 +32,22 @@ const VideoPlayer = ({ route }) => {
         };
 
         fetchData();
-    }, [videoId]);
-
+        
+    }, [videoId]); 
     return (
         <View style={styles.videoContainer}>
-            <View style={styles.player}>
-                {/* <Video
-                    source={background} on mp4 file
-                    source={uri: videoData ? `https://www.youtube.com/watch?v=${videoData.id}` : "Loading..."} on youtube video
+            <Video
+                style={styles.player}
+                // source={background} //on mp4 file
+                source={{uri: `https://www.youtube.com/embed/ZBCUegTZF7M${videoId}`}} //on youtube video
 
-                    ref={videoRef}
+                ref={videoRef}
 
-                    resizeMode="cover"
+                 resizeMode="cover"
 
-                    controls={true} 
+                controls={true} 
 
-
-                /> */}
-            </View>
+            />
             <Text style={styles.title}>{videoData ? videoData.snippet.title : "Loading..."}</Text>
             <View style={styles.chanelContent}>
                 <View style={styles.chanelIcon}>
