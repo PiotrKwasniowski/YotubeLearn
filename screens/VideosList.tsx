@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'; 
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, FlatList, ScrollView } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { API_KEY } from '@env';
 
@@ -10,6 +10,8 @@ const VideoLists = ({ navigation }) => {
     const [reactNativeData, setReactNativeData] = useState([]);
     const [typescriptVideos, setTypescriptVideos] = useState([]);
     const [typescriptData, setTypescriptData] = useState([]);
+    const [javascriptVideos, setJavascriptVideos] = useState([]);
+    const [javascriptData, setJavascriData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
@@ -41,6 +43,11 @@ const VideoLists = ({ navigation }) => {
             .then(data => {
                 setTypescriptVideos(data.items);
                 setTypescriptData(data);
+            });
+        GetVideos('Javascript tutorial programming')
+            .then(data => {
+                setJavascriptVideos(data.items);
+                setJavascriData(data);
             });
     }, []);
 
@@ -88,66 +95,87 @@ const VideoLists = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>React Native</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', { data: reactNativeData, search: 'React Native' })}>
-                        <Text style={styles.link}>Show more</Text>
-                    </TouchableOpacity>
+            <ScrollView style={styles.videosContainer}>
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>React Native</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', { data: reactNativeData, search: 'React Native' })}>
+                            <Text style={styles.link}>Show more</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {loading ? (
+                        <Text>Loading...</Text>
+                    ) : (
+                        <FlatList
+                            data={reactNativeVideos}
+                            keyExtractor={(item) => item.id.videoId}
+                            renderItem={renderVideoItem}
+                            horizontal
+                            contentContainerStyle={styles.flatListContent}
+                        />
+                    )}
                 </View>
-                {loading ? (
-                    <Text>Loading...</Text>
-                ) : (
-                    <FlatList
-                        data={reactNativeVideos}
-                        keyExtractor={(item) => item.id.videoId}
-                        renderItem={renderVideoItem}
-                        horizontal
-                        contentContainerStyle={styles.flatListContent}
-                    />
-                )}
-            </View>
-            <View style={styles.bar}/>
-            <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>React</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', { data: reactData, search: 'React' })}>
-                        <Text style={styles.link}>Show more</Text>
-                    </TouchableOpacity>
+                <View style={styles.bar}/>
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>React</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', { data: reactData, search: 'React' })}>
+                            <Text style={styles.link}>Show more</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {loading ? (
+                        <Text>Loading...</Text>
+                    ) : (
+                        <FlatList
+                            data={reactVideos}
+                            keyExtractor={(item) => item.id.videoId}
+                            renderItem={renderVideoItem}
+                            horizontal
+                            contentContainerStyle={styles.flatListContent}
+                        />
+                    )}
                 </View>
-                {loading ? (
-                    <Text>Loading...</Text>
-                ) : (
-                    <FlatList
-                        data={reactVideos}
-                        keyExtractor={(item) => item.id.videoId}
-                        renderItem={renderVideoItem}
-                        horizontal
-                        contentContainerStyle={styles.flatListContent}
-                    />
-                )}
-            </View>
-            <View style={styles.bar}/>
-            <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Typescript</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', { data: typescriptData, search: 'Typescript' })}>
-                        <Text style={styles.link}>Show more</Text>
-                    </TouchableOpacity>
+                <View style={styles.bar}/>
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Typescript</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', { data: typescriptData, search: 'Typescript' })}>
+                            <Text style={styles.link}>Show more</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {loading ? (
+                        <Text>Loading...</Text>
+                    ) : (
+                        <FlatList
+                            data={typescriptVideos}
+                            keyExtractor={(item) => item.id.videoId}
+                            renderItem={renderVideoItem}
+                            horizontal
+                            contentContainerStyle={styles.flatListContent}
+                        />
+                    )}
                 </View>
-                {loading ? (
-                    <Text>Loading...</Text>
-                ) : (
-                    <FlatList
-                        data={typescriptVideos}
-                        keyExtractor={(item) => item.id.videoId}
-                        renderItem={renderVideoItem}
-                        horizontal
-                        contentContainerStyle={styles.flatListContent}
-                    />
-                )}
-            </View>
-
+                <View style={styles.bar}/>
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Javascript</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe', { data: reactData, search: 'Javascript' })}>
+                            <Text style={styles.link}>Show more</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {loading ? (
+                        <Text>Loading...</Text>
+                    ) : (
+                        <FlatList
+                            data={javascriptVideos}
+                            keyExtractor={(item) => item.id.videoId}
+                            renderItem={renderVideoItem}
+                            horizontal
+                            contentContainerStyle={styles.flatListContent}
+                        />
+                    )}
+                </View>
+            </ScrollView>
             <View style={styles.footer}>
                 <View>
                     <TouchableOpacity onPress={() => navigation.navigate('VideoGroupe')}>
@@ -206,6 +234,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 10,
         marginBottom: 10,
+        paddingTop: 10,
     },
     sectionTitle: {
         fontFamily: 'Poppins-SemiBold',
@@ -273,7 +302,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#2B2D42',
         margin: 4,
         top: -10,
-    }
+    },
+    videosContainer: {
+        width: '100%',
+        maxHeight: 600,
+    },
 });
 
 export default VideoLists;

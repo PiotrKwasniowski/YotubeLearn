@@ -5,12 +5,16 @@ import { API_KEY } from '@env';
 import { TextInput } from 'react-native-paper';
 import Video, {VideoRef} from 'react-native-video';
 
-const VideoPlayer = ({ route }) => {
+const VideoPlayer = ({ route,navigation }) => {
     const [tab, setTab] = useState('Details');
     const [videoData, setVideoData] = useState(null);
     const videoId = route.params.data;
     const [notes, setNotes] = useState([]);
     const [note, setNote] = useState('');
+    const [controls, setControls] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isFullScreen, setIsFullScreen] = useState(false);
 
     const videoRef = React.useRef<VideoRef>(null);
     const background = require('../assets/video/broadchurch.mp4');
@@ -34,20 +38,119 @@ const VideoPlayer = ({ route }) => {
         fetchData();
         
     }, [videoId]); 
+
+    useEffect(() => {
+        setTimeout(() => {
+            setControls(false);
+        }, 5000);
+    }, [controls]);
+
+
+    const pauseVideo = () => {
+        if(isPaused){
+            videoRef.current.resume();
+            setIsPaused(false);
+            setControls(false);
+        }else{
+            videoRef.current.pause();
+            setIsPaused(true);
+            setControls(false);
+        }
+    };
+
+    const skipForward = () => {
+        videoRef.current.getCurrentPosition().then((position) => {
+            videoRef.current.seek(position + 5);
+        });
+        setControls(false);
+    };
+
+    const skipBackward = () => {
+        videoRef.current.getCurrentPosition().then((position) => {
+            videoRef.current.seek(position - 5);
+        });
+        setControls(false);
+    }
+
+    const mute = () => {
+        if(isMuted){
+            videoRef.current.setVolume(100);
+            setIsMuted(false);
+        }else{
+            videoRef.current.setVolume(0);
+            setIsMuted(true);
+        }
+        
+        setControls(false);
+    }
+
+    const fullScreen = () => {
+        if(isFullScreen){
+            videoRef.current.setFullScreen(false);
+
+            setIsFullScreen(false);
+        }else{
+            videoRef.current.setFullScreen(true);
+
+            setIsFullScreen(true);
+        }
+        setControls(false);
+    }
     return (
-        <View style={styles.videoContainer}>
-            <Video
-                style={styles.player}
-                // source={background} //on mp4 file
-                source={{uri: `https://www.youtube.com/embed/ZBCUegTZF7M${videoId}`}} //on youtube video
+        <View style={styles.videoContainer} >
+            <TouchableOpacity onPress={()=>{setControls(true)}} style={styles.touchable}>
 
-                ref={videoRef}
+                <Video
+                        style={styles.player}
+                        source={background} //on mp4 file
+                        // source={{uri: `https://www.youtube.com/embed/ZBCUegTZF7M${videoId}`}} //Youtube videos are not supported by react-native-video
 
-                 resizeMode="cover"
+                        ref={videoRef}
 
-                controls={true} 
+                        resizeMode="cover"
 
-            />
+                        repeat={true}
+                />
+
+            </TouchableOpacity>
+            
+            <View style={[styles.background,{display: controls ? 'flex' : 'none'}]}/>
+            
+            <TouchableOpacity 
+                style={[
+                    styles.pause, 
+                    {display: controls  ? 'flex' : 'none'},
+                ]}
+                onPress={() => {pauseVideo()}}
+            >
+                <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A5E.svg"  style={{display: isPaused ? 'none' : 'flex'}}/>
+
+                <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A5B.svg" style={{display: isPaused ? 'flex' : 'none'}}/>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.next,{display: controls ? 'flex' : 'none'}]} onPress={skipForward}>
+                <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A5C.svg" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.prev,{display: controls ? 'flex' : 'none'}]} onPress={skipBackward}>
+                <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A4S.svg" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.back,{display: controls ? 'flex' : 'none'}]} onPress={()=>{navigation.navigate('VideoGroupe')}}>
+                <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A50.svg" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.mute,{display: controls ? 'flex' : 'none'}]} onPress={mute}>
+                <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A40.svg" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.stream,{display: controls ? 'flex' : 'none'}]} onPress={()=>{setControls(false)}}>
+                <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A3Z.svg" />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.fullscreen,{display: controls ? 'flex' : 'none'}]} onPress={fullScreen}>
+                <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A4h.svg" />
+            </TouchableOpacity>
             <Text style={styles.title}>{videoData ? videoData.snippet.title : "Loading..."}</Text>
             <View style={styles.chanelContent}>
                 <View style={styles.chanelIcon}>
@@ -95,7 +198,7 @@ const VideoPlayer = ({ route }) => {
                             data={notes}
                             keyExtractor={(item, index) => index.toString()}
                             renderItem={({ item }) => <View style={styles.noteContainer}><Text style={styles.note}>{item}</Text></View>}
-                            scrollEnabled={false}  // Disable FlatList's own scrolling
+                            scrollEnabled={false}  
                         />
                     </ScrollView>
                 </View>
@@ -129,6 +232,15 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 280,
         backgroundColor: 'black',
+        zIndex: -1,
+    },
+    background:{
+        width: '100%',
+        height: 280,
+        backgroundColor: '#FFFFFF80',
+        position: 'absolute',
+        top: 0,
+        zIndex: 0,
     },
     title: {
         width: '90%',
@@ -289,7 +401,107 @@ const styles = StyleSheet.create({
     notesDataContainer:{
         maxHeight: 200,
         width: '100%',
-    }
+    },
+    pause: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 40,
+        width: 40,
+        borderRadius: 100,
+        backgroundColor: '#00000040',
+        position: 'absolute',
+        top: 120,
+        zIndex: 1,
+    },
+    next: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 32,
+        width: 32,
+        borderRadius: 100,
+        backgroundColor: '#00000040',
+        position: 'absolute',
+        top: 125,
+        left: 280,
+        zIndex: 1,
+    },
+    prev: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 32,
+        width: 32,
+        borderRadius: 100,
+        backgroundColor: '#00000040',
+        position: 'absolute',
+        top: 125,
+        right: 280,
+        zIndex: 1,
+    },
+    back: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 32,
+        width: 32,
+        borderRadius: 100,
+        backgroundColor: '#00000040',
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 1,
+    },
+    mute:{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 32,
+        width: 32,
+        borderRadius: 100,
+        backgroundColor: '#00000040',
+        position: 'absolute',
+        top: 20,
+        right: 50,
+        zIndex: 1,
+    },
+    stream:{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 32,
+        width: 32,
+        borderRadius: 100,
+        backgroundColor: '#00000040',
+        position: 'absolute',
+        top: 20,
+        right: 10,
+        zIndex: 1,
+    },
+    fullscreen:{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 32,
+        width: 32,
+        position: 'absolute',
+        top: 230,
+        right: 10,
+        zIndex: 1,
+    },
+    touchable: {
+        width: '100%',
+        height: 280,
+    },
+
 });
 
 export default VideoPlayer;
