@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList } from '
 import { SvgUri } from 'react-native-svg';
 import { API_KEY } from '@env';
 import { TextInput } from 'react-native-paper';
+import Video, {VideoRef} from 'react-native-video';
 
 const VideoPlayer = ({ route }) => {
     const [tab, setTab] = useState('Details');
@@ -10,6 +11,10 @@ const VideoPlayer = ({ route }) => {
     const videoId = route.params.data;
     const [notes, setNotes] = useState([]);
     const [note, setNote] = useState('');
+
+    const videoRef = React.useRef<VideoRef>(null);
+    const background = require('../assets/video/broadchurch.mp4');
+
     const onChangeTextInput = (text) => {
         setNote(text);
     }
@@ -32,7 +37,17 @@ const VideoPlayer = ({ route }) => {
     return (
         <View style={styles.videoContainer}>
             <View style={styles.player}>
-                <Text>{videoData ? videoData.snippet.title : "Loading..."}</Text>
+                <Video
+                    source={background}
+
+                    ref={videoRef}
+
+                    resizeMode="cover"
+
+                    controls={true} 
+
+
+                />
             </View>
             <Text style={styles.title}>{videoData ? videoData.snippet.title : "Loading..."}</Text>
             <View style={styles.chanelContent}>
