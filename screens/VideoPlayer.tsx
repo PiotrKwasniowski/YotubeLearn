@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { API_KEY } from '@env';
+import { TextInput } from 'react-native-paper';
 
 const VideoPlayer = ({ route }) => {
     const [tab, setTab] = useState('Details');
     const [videoData, setVideoData] = useState(null);
     const videoId = route.params.data;
-    
+    const [notes, setNotes] = useState([]);
+    const [note, setNote] = useState('');
+    const onChangeTextInput = (text) => {
+        setNote(text);
+    }
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -70,7 +75,31 @@ const VideoPlayer = ({ route }) => {
                 </ScrollView>
             </View>
             <View style={[styles.notesData, { display: tab === "Notes" ? 'flex' : 'none' }]}>
-                <Text>Notes</Text>
+                <View style={styles.notesDataContainer}>
+                    <ScrollView contentContainerStyle={styles.scrollContent}>
+                        <FlatList
+                            data={notes}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={({ item }) => <View style={styles.noteContainer}><Text style={styles.note}>{item}</Text></View>}
+                            scrollEnabled={false}  // Disable FlatList's own scrolling
+                        />
+                    </ScrollView>
+                </View>
+                <TextInput
+                    style={styles.input}
+                    label="Add a note"
+                    placeholder='Add a note'
+                    onChangeText={onChangeTextInput}
+                    value={note}
+                />
+                <TouchableOpacity 
+                    style={styles.button} 
+                    onPress={() => {
+                        setNotes([...notes, note]);
+                        setNote('');
+                    }}>
+                    <Text style={styles.buttonText}>Add note</Text>
+                </TouchableOpacity>   
             </View>
         </View>
     );
@@ -147,7 +176,7 @@ const styles = StyleSheet.create({
         color: '#2b2d42',
     },
     detailsData: {
-        flex: 1,  // Important for scrollable area
+        flex: 1,  
         width: '85%',
     },
     notesData: {
@@ -169,7 +198,8 @@ const styles = StyleSheet.create({
         marginVertical: 8,
     },
     scrollContent: {
-        paddingBottom: 20, // Ensure scrolling doesn't cut off content
+        paddingBottom: 20, 
+        
     },
     statsContainer: {
         flexDirection: 'row',
@@ -193,6 +223,59 @@ const styles = StyleSheet.create({
         color: '#ffffff',
         marginTop: 5,
     },
+    button: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#2b2d42',
+        width: 256,
+        height: 40,
+        alignSelf: 'center',
+        borderRadius: 8,
+        marginTop: 10,
+
+    },
+    buttonText:{
+        fontFamily: 'Poppins-Regular',
+        fontWeight: '600',
+        fontSize: 14,
+        color: '#ffffff',   
+    },
+    input:{
+        width: 361,
+        height: 60,
+        marginTop: 10,
+        backgroundColor: 'transparent',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#c8c8c8',
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        alignSelf: 'center',
+        fontFamily: 'Poppins-Regular',
+        fontSize: 12,
+
+        
+    },
+    noteContainer: {
+        backgroundColor: 'transparent',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#c8c8c8',
+        padding: 5,
+        marginTop: 5,
+        maxHeight: 300,
+    },
+    note:{
+        fontFamily: 'Poppins-Regular',
+        fontSize: 12,
+        fontWeight: '400',
+    },
+    notesDataContainer:{
+        maxHeight: 200,
+        width: '100%',
+    }
 });
 
 export default VideoPlayer;

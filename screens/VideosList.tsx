@@ -15,7 +15,7 @@ const VideoLists = ({ navigation }) => {
 
     const GetVideos = async (topic) => {
         try {
-            const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${topic}&key=${API_KEY}`);
+            const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${topic}&key=${API_KEY}`);
             const data = await response.json();
             
             return data;
@@ -32,16 +32,16 @@ const VideoLists = ({ navigation }) => {
                 setReactNativeVideos(data.items); 
                 setReactNativeData(data);
             });
-        GetVideos('React tutorial programming')
-            .then(data => {
-                setReactVideos(data.items);
-                setReactData(data);
-            });
-        GetVideos('Typescript tutorial programming')
-            .then(data => {
-                setTypescriptVideos(data.items);
-                setTypescriptData(data);
-            });
+        // GetVideos('React tutorial programming')
+        //     .then(data => {
+        //         setReactVideos(data.items);
+        //         setReactData(data);
+        //     });
+        // GetVideos('Typescript tutorial programming')
+        //     .then(data => {
+        //         setTypescriptVideos(data.items);
+        //         setTypescriptData(data);
+        //     });
     }, []);
 
     const renderVideoItem = ({ item }) => {
