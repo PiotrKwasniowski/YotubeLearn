@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, Animated, Dimensions } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { API_KEY } from '@env';
 import { TextInput } from 'react-native-paper';
@@ -15,6 +15,29 @@ const VideoPlayer = ({ route,navigation }) => {
     const [isPaused, setIsPaused] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [progress] = useState(new Animated.Value(0));
+
+    const handleProgress = (data) => {
+        setCurrentTime(data.currentTime);
+        // Animate the progress bar
+        Animated.timing(progress, {
+            toValue: (data.currentTime / duration) * 100, // Convert to percentage
+            duration: 300,
+            useNativeDriver: false,
+        }).start();
+    };
+
+    const handleLoad = (data) => {
+        setDuration(data.duration);
+    };
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    };
 
     const videoRef = React.useRef<VideoRef>(null);
     const background = require('../assets/video/broadchurch.mp4');
@@ -22,6 +45,8 @@ const VideoPlayer = ({ route,navigation }) => {
     const onChangeTextInput = (text) => {
         setNote(text);
     }
+
+    
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -110,12 +135,14 @@ const VideoPlayer = ({ route,navigation }) => {
                         resizeMode="cover"
 
                         repeat={true}
+                        onProgress={handleProgress}
+                        onLoad={handleLoad}
                 />
 
             </TouchableOpacity>
             
             <View style={[styles.background,{display: controls ? 'flex' : 'none'}]}/>
-            
+
             <TouchableOpacity 
                 style={[
                     styles.pause, 
@@ -151,7 +178,28 @@ const VideoPlayer = ({ route,navigation }) => {
             <TouchableOpacity style={[styles.fullscreen,{display: controls ? 'flex' : 'none'}]} onPress={fullScreen}>
                 <SvgUri width="20" height="20" uri="https://svgshare.com/i/1A4h.svg" />
             </TouchableOpacity>
-            <Text style={styles.title}>{videoData ? videoData.snippet.title : "Loading..."}</Text>
+
+            <Text style={[styles.time,{display: controls ? 'flex' : 'none'}]}>
+                {formatTime(currentTime)} / {formatTime(duration)}
+            </Text>
+            
+            <View style={styles.progressBarContainer}>
+                <Animated.View
+                    style={[
+                        styles.progressBar,
+                        {
+                            width: progress.interpolate({
+                                inputRange: [0, 100],
+                                outputRange: ['0%', '100%'],
+                            }),
+                        },
+                    ]}
+                />
+            </View>
+
+            <Text style={styles.title}>
+                {videoData ? videoData.snippet.title : "Loading..."}
+            </Text>
             <View style={styles.chanelContent}>
                 <View style={styles.chanelIcon}>
                     <SvgUri width="20" height="20" uri="https://svgshare.com/i/19yc.svg" />
@@ -501,7 +549,25 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 280,
     },
-
+    time:{
+        position: 'absolute',
+        top: 240,
+        left: 10,
+        zIndex: 1,
+        color: 'white',
+    },
+    progressBarContainer: {
+        position: 'absolute',
+        top: 276,
+        left: 0,
+        width: '100%',
+        height: 4,
+        backgroundColor: '#FFFFFF80', 
+    },
+    progressBar: {
+        height: '100%',
+        backgroundColor: 'red',
+    },
 });
 
 export default VideoPlayer;

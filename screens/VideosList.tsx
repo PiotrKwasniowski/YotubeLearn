@@ -76,7 +76,7 @@ const VideoLists = ({ navigation }) => {
             console.log(error);
         }
     }
-
+    
     return (
         <View style={styles.container}>
             <View style={styles.header}>
